@@ -37,7 +37,7 @@ def h_cal():
              a=3
          elif re.match('第[零一二三四五六七八九十百千0-9]+章', line):
              a=2
-         elif re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}', line):
+         elif re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…%//]+[。：:？\?！!；;]{1}', line):
              a=0 # “*、”若以句号等结尾，不判定为标题
          elif re.match('[零一二三四五六七八九十百千0-9]+、', line):
              a=1
@@ -88,7 +88,7 @@ def if_has_toc():
 
     
 
-s = '/Users/Ye/Downloads/中共中央办公厅、国务院办公厅印发《关于新时代进一步加强科学技术普及工作的意见》(FBM-CLI.16.5134169).txt'
+s = sys.argv[1]
 
 with open(s , mode='r+') as filetxt, open(s.replace('txt','md'), mode='w') as new_filetext:
      lines=filetxt.readlines()
@@ -108,8 +108,8 @@ with open(s , mode='r+') as filetxt, open(s.replace('txt','md'), mode='w') as ne
          # 以下为未换行纠正
          lines[i] = re.sub('(?P<period>。\s*)(?P<toc>第[零一二三四五六七八九十百千0-9]+(编|分编|章|节) [\u4e00-\u9fa5]+)',toc_linebreak,lines[i]) # 纠正正文部分条文内容与标题行之间未换行的问题
          lines[i] = re.sub('(?P<period>。\s*)(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(之[零一二三四五六七八九十百千0-9]+)?(\s*【[\u4e00-\u9fa5、]+】)?)', t_linebreak ,lines[i]) # 纠正正文部分条与条之间未换行的问题
-         if re.search('\s+[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}',lines[i]): # 纠正正文部分条文内容与作为正文的“*、”之间未换行的问题（比作为标题的“*、”多出一段内容加句号等）
-             lines[i] = re.sub('(?P<period>\s+)(?P<t_num>[零一二三四五六七八九十百千0-9]+、)(?P<t_content>[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1})', t_linebreak ,lines[i]) 
+         if re.search('\s+[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…%//]+[。：:？\?！!；;]{1}',lines[i]): # 纠正正文部分条文内容与作为正文的“*、”之间未换行的问题（比作为标题的“*、”多出一段内容加句号等）
+             lines[i] = re.sub('(?P<period>\s+)(?P<t_num>[零一二三四五六七八九十百千0-9]+、)(?P<t_content>[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…%//]+[。：:？\?！!；;]{1})', t_linebreak ,lines[i]) 
          elif re.search('\s+[零一二三四五六七八九十百千0-9]+、',lines[i]): # 纠正正文部分条文内容与作为标题的“*、”之间未换行的问题
              lines[i] = re.sub('(?P<period>\s+)(?P<toc>[零一二三四五六七八九十百千0-9]+、)', toc_linebreak ,lines[i]) 
          lines[i] = re.sub('(?P<period>；\s*)(?P<x_num>（[零一二三四五六七八九十百千0-9]+）\s*[\u4e00-\u9fa5]+)', x_linebreak ,lines[i]) # 纠正正文部分项与项之间未换行的问题
@@ -117,7 +117,7 @@ with open(s , mode='r+') as filetxt, open(s.replace('txt','md'), mode='w') as ne
         # 以下为作为条一级的内容处理
          if re.match('第[零一二三四五六七八九十百千0-9]+条',lines[i]): 
              lines[i]=re.sub('(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(之[零一二三四五六七八九十百千0-9]+)?(\s*【[\u4e00-\u9fa5、]+】)?)', t_proc, lines[i], 1) # “第*条”处理
-         if re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}',lines[i]): 
+         if re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…%//]+[。：:？\?！!；;]{1}',lines[i]): 
              lines[i]=re.sub('(?P<t_num>[零一二三四五六七八九十百千0-9]+、)', t_proc, lines[i], 1) # “*、”(正文)处理
          
          # 附件作一级标题处理
