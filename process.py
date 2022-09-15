@@ -1,9 +1,7 @@
 #!/opt/homebrew/bin/python3
 # -*- coding: UTF-8 -*-
 
-from ast import Break, Continue
-from email import contentmanager
-import re
+import re,sys
 
 # 处理条
 def t_proc(matched): 
@@ -39,7 +37,9 @@ def h_cal():
              a=3
          elif re.match('第[零一二三四五六七八九十百千0-9]+章', line):
              a=2
-         elif if_toc ==True and re.match('[零一二三四五六七八九十百千0-9]+、', line):
+         elif re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}', line):
+             a=0 # “*、”若以句号等结尾，不判定为标题
+         elif re.match('[零一二三四五六七八九十百千0-9]+、', line):
              a=1
          b.append(a)     
      return max(b)
@@ -64,11 +64,13 @@ def toc_linebreak(matched):
              a = matched.group('period') + '\n\n### ' + matched.group('toc')
         elif toc_lvs == 2:
              a = matched.group('period') + '\n\n## ' + matched.group('toc')
+     elif '、' in matched.group('toc'):
+         a = matched.group('period') + '\n\n# ' + matched.group('toc')
      return a
 
 # 纠正未独立成行的条文的函数
 def t_linebreak(matched):
-    return matched.group('period') + '\n\n**' + matched.group('t_num') + '**'
+    return matched.group('period') + '\n\n**' + matched.group('t_num') + '**' + matched.group('t_content')
 
 # 纠正未独立成行的项的函数
 def x_linebreak(matched):
@@ -86,7 +88,7 @@ def if_has_toc():
 
     
 
-s = '/Users/Ye/Downloads/监管规则适用指引——法律类第2号 律师事务所从事首次公开发行(FBM-CLI-4-5114001).txt'
+s = '/Users/Ye/Downloads/中共中央办公厅、国务院办公厅印发《关于新时代进一步加强科学技术普及工作的意见》(FBM-CLI.16.5134169).txt'
 
 with open(s , mode='r+') as filetxt, open(s.replace('txt','md'), mode='w') as new_filetext:
      lines=filetxt.readlines()
@@ -104,16 +106,24 @@ with open(s , mode='r+') as filetxt, open(s.replace('txt','md'), mode='w') as ne
      first_toc = 'This file has no directory！（此文件无目录！）' # 初始赋值，为了保证法条中无内容能与此匹配
      for i in range(len(lines)):
          # 以下为未换行纠正
-         lines[i] = re.sub('(?P<period>。\s*)(?P<toc>第[零一二三四五六七八九十百千0-9]+(编|分编|章|节) [\u4e00-\u9fa5]+)',toc_linebreak,lines[i]) # 纠正正文内容中条与标题行之间未换行的问题
-         lines[i] = re.sub('(?P<period>。\s*)(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(\s*【[\u4e00-\u9fa5]+】)?)', t_linebreak ,lines[i]) # 纠正正文内容中条与条之间未换行的问题
-         if toc_lvs == 0:
-             lines[i] = re.sub('(?P<period>。\s*)(?P<t_num>[零一二三四五六七八九十百千0-9]+、)', t_linebreak ,lines[i]) # 纠正正文内容中条与条之间未换行的问题
-         lines[i] = re.sub('(?P<period>；\s*)(?P<x_num>（[零一二三四五六七八九十百千0-9]+）\s*[\u4e00-\u9fa5]+)', x_linebreak ,lines[i]) # 纠正正文内容中项与项之间未换行的问题
-         lines[i] = re.sub('(?P<period>：\s*)(?P<x_num>（[零一二三四五六七八九十百千0-9]+）\s*[\u4e00-\u9fa5]+)', x_linebreak ,lines[i]) # 纠正正文内容中项与项之间未换行的问题
+         lines[i] = re.sub('(?P<period>。\s*)(?P<toc>第[零一二三四五六七八九十百千0-9]+(编|分编|章|节) [\u4e00-\u9fa5]+)',toc_linebreak,lines[i]) # 纠正正文部分条文内容与标题行之间未换行的问题
+         lines[i] = re.sub('(?P<period>。\s*)(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(之[零一二三四五六七八九十百千0-9]+)?(\s*【[\u4e00-\u9fa5、]+】)?)', t_linebreak ,lines[i]) # 纠正正文部分条与条之间未换行的问题
+         if re.search('\s+[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}',lines[i]): # 纠正正文部分条文内容与作为正文的“*、”之间未换行的问题（比作为标题的“*、”多出一段内容加句号等）
+             lines[i] = re.sub('(?P<period>\s+)(?P<t_num>[零一二三四五六七八九十百千0-9]+、)(?P<t_content>[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1})', t_linebreak ,lines[i]) 
+         elif re.search('\s+[零一二三四五六七八九十百千0-9]+、',lines[i]): # 纠正正文部分条文内容与作为标题的“*、”之间未换行的问题
+             lines[i] = re.sub('(?P<period>\s+)(?P<toc>[零一二三四五六七八九十百千0-9]+、)', toc_linebreak ,lines[i]) 
+         lines[i] = re.sub('(?P<period>；\s*)(?P<x_num>（[零一二三四五六七八九十百千0-9]+）\s*[\u4e00-\u9fa5]+)', x_linebreak ,lines[i]) # 纠正正文部分项与项之间未换行的问题
+         lines[i] = re.sub('(?P<period>：\s*)(?P<x_num>（[零一二三四五六七八九十百千0-9]+）\s*[\u4e00-\u9fa5]+)', x_linebreak ,lines[i]) # 纠正正文部分项与项之间未换行的问题
+        # 以下为作为条一级的内容处理
          if re.match('第[零一二三四五六七八九十百千0-9]+条',lines[i]): 
-             lines[i]=re.sub('(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(\s*【[\u4e00-\u9fa5]+】)?)', t_proc, lines[i], 1) # “第*条”处理
-         if re.match('[零一二三四五六七八九十百千0-9]+、\s*[\u4e00-\u9fa5]+',lines[i]) and toc_lvs == 0: 
-             lines[i]=re.sub('(?P<t_num>[零一二三四五六七八九十百千0-9]+、)', t_proc, lines[i], 1) # “第*条”处理
+             lines[i]=re.sub('(?P<t_num>第[零一二三四五六七八九十百千0-9]+条(之[零一二三四五六七八九十百千0-9]+)?(\s*【[\u4e00-\u9fa5、]+】)?)', t_proc, lines[i], 1) # “第*条”处理
+         if re.match('[零一二三四五六七八九十百千0-9]+、[\d\w\u4e00-\u9fa5，、（）()《》〔〕〖〗\[\]【】〈〉<>⟨⟩“”""‘’''～－——·・…]+[。：:？\?！!；;]{1}',lines[i]): 
+             lines[i]=re.sub('(?P<t_num>[零一二三四五六七八九十百千0-9]+、)', t_proc, lines[i], 1) # “*、”(正文)处理
+         
+         # 附件作一级标题处理
+         if re.match('附件[零一二三四五六七八九十百千0-9]{1}',lines[i]):
+             lines[i]=re.sub('(?P<h1_num>附件[零一二三四五六七八九十百千0-9]?)', h1_proc, lines[i], 1)
+
          # 以下为对标题行的处理
          # 当存在目录时需要区分位置，目录及以上部分标题行不做处理
          if if_toc == True: 
