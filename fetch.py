@@ -36,11 +36,11 @@ class Agent():
         self.driver.get("https://www.pkulaw.com/chl/aec0c211a78989e9bdfb.html")
         # res = self.driver.find_element(By.LINK_TEXT, "现行有效").get_attribute("href")
         title = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/h2").text.rstrip(' English')
-        rele_date = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[3]").get_attribute("title")
-        effc_date = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[4]").get_attribute("title")
-        stat_of_auth = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[5]/div/span").get_attribute("title")
-        lv_of_auth = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[6]/div/span").get_attribute("title")
-        print('标题：',title,'\n','发布日期：',rele_date,'\n','生效日期',effc_date,'\n','时效性',stat_of_auth,'\n','效力级别',lv_of_auth)
+        rele_date = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[2]").get_attribute("title")
+        effc_date = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[3]").get_attribute("title")
+        stat_of_auth = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[4]/div/span").get_attribute("title")
+        lv_of_auth = self.driver.find_element(By.XPATH,"//*[@id='gridleft']/div/div[1]/div[2]/ul/li[5]/div/span").get_attribute("title")
+        print('标题：',title,'\n','发布日期：',rele_date,'\n','生效日期：',effc_date,'\n','时效性：',stat_of_auth,'\n','效力级别：',lv_of_auth)
 
 
 if __name__ == '__main__':
