@@ -7,7 +7,14 @@ def read():
     content = file1.readlines()
     file1.close()
     # 以下操作为去除doc文件头，避免“邢\x11唷”乱码
-    del content[0:2]
+    count = 0
+    for line in content:
+        matchObj = re.search('.+<html><body>',line)
+        if matchObj:
+            break
+        else:
+            count += 1
+    del content[0:count]
     line1 = content.pop(0)
     line1 = re.sub('.+<html><body>','<html><body>', line1 ,1)
     content.insert(0,line1)
@@ -29,7 +36,7 @@ def rename(content):
     os.rename(filepath,filepath.replace('.doc','【%s】.doc' % (case_number)))
             
 
-filepath = '/Users/Ye/Downloads/南雨辰王鑫桐侵犯公民个人信息一审刑事判决书.doc'
+filepath = sys.argv[1]
 
 file_content = read()
 write(file_content)
